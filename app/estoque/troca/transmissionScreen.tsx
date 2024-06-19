@@ -186,7 +186,7 @@ export default function transmissionScreen() {
                         options={{
                         title: 'Troca',
                         headerTitle: 'Troca',
-                        headerRight: () => <ExportTxtData data={logTroca} fileName="consumo"/>
+                        headerRight: () => <ExportTxtData data={logTroca} fileName="troca"/>
                         }}
                     />
             

@@ -163,7 +163,7 @@ export default function transmissionScreen() {
                         options={{
                         title: 'Producao',
                         headerTitle: 'Producao',
-                        headerRight: () => <ExportTxtData data={logProducao} fileName="consumo"/>
+                        headerRight: () => <ExportTxtData data={logProducao} fileName="producao"/>
                         }}
                     />
             

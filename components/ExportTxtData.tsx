@@ -2,15 +2,33 @@ import { TouchableOpacity } from "react-native";
 import { Entypo } from '@expo/vector-icons';
 import { Alert } from 'react-native';
 import * as FileSystem from 'expo-file-system';
-import * as DocumentPicker from 'expo-document-picker';
 
-export default function ExportTxtData(data: any, fileName: string) {
+export default function ExportTxtData({data, fileName}: {data: any, fileName: string}) {
+    
     const saveLogToFile = async () => {
+        const today = new Date()
+        const fullFileName = `${fileName} (${today.toLocaleString('pt-BR', {
+            day: '2-digit',
+            month: '2-digit',
+            year: 'numeric'
+        }).replace(/\//g, '-')}).txt`
+
+        console.log(data)
+
+
         try {
             const logString = JSON.stringify(data, null, 2);
-            const filePath = `${FileSystem.documentDirectory}${fileName}.txt`
-            await FileSystem.writeAsStringAsync(filePath, logString)
-            Alert.alert('Sucesso', 'Arquivo salvo em: ' + filePath);
+            const fileDir = FileSystem.StorageAccessFramework.getUriForDirectoryInRoot("Documents")
+
+            const permissions = await FileSystem.StorageAccessFramework.requestDirectoryPermissionsAsync(fileDir);
+            if (!permissions.granted) {
+                return;
+            }
+
+            const uri = await FileSystem.StorageAccessFramework.createFileAsync(fileDir, fullFileName, 'text/plain')
+            await FileSystem.writeAsStringAsync(uri, logString)
+
+            Alert.alert('Sucesso', 'Arquivo salvo em: ' + uri);
         } catch (err) {
 
             Alert.alert('Erro', `Erro ao salvar o arquivo: ${err}`);
