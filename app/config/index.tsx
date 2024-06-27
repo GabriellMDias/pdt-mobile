@@ -29,7 +29,7 @@ export default function Config() {
   const [syncModal, setSyncModal] = useState<boolean>(false)
   const [storeSelectorModal, setStoreSelectorModal] = useState<boolean>(false)
   const [openStorePicker, setOpenStorePicker] = useState(false);
-  const [selectedStore, setSelectedStore] = useState(undefined);
+  const [selectedStore, setSelectedStore] = useState<undefined | number>(undefined);
   const [stores, setStores] = useState<{value: number, label: string}[]>([])
 
   useEffect(() => {

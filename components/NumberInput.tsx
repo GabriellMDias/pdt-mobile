@@ -16,13 +16,24 @@ type componentProps = {
 
 const NumberInput = forwardRef<TextInput, componentProps>(
     ({value = '', setValue = () => {}, placeholder = '', label = '', editable = true, onSubmitEditing = undefined, decimal = false, style = {}, labelStyle = {}, textInputStyle = {}}: componentProps, ref) => {
-    
-    const onChangeText = (text: string) => {
+
+    const onChangeText = (newValue: string) => {
+        console.log(newValue)
         if(!decimal) {
-            const integerInput = text.replace(",","").replace(".","")
+            const integerInput = newValue.replace(",","").replace(".","")
             setValue(integerInput)
         } else {
-            setValue(text)
+            const previousValue = value
+            if (previousValue === '' || previousValue === '0' || previousValue === '0.000'){
+                const newValueFloat = Number.isNaN(parseFloat(newValue) / 1000) ? 0 : parseFloat(newValue) / 1000
+                setValue(String(newValueFloat).replace('.', ','))
+            } else {
+                const numberWithNoDot = parseInt(newValue.replace(",", "").replace(".",""))
+                const newValueFloat = Number.isNaN(numberWithNoDot/1000) ? 0 : numberWithNoDot/1000
+                const valueWithThreeDecimalPlaces = newValueFloat.toFixed(3).replace('.', ',')
+                setValue(valueWithThreeDecimalPlaces)
+            }
+            
         }
         
     }

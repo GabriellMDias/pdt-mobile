@@ -1,7 +1,7 @@
 import { Stack } from "expo-router";
 import { View, Text, StyleSheet, Alert } from "react-native";
 import { useFocusEffect } from '@react-navigation/native';
-import DropDownPicker from 'react-native-dropdown-picker';
+import DropDownPicker, { type ItemType } from 'react-native-dropdown-picker';
 import StdButton from "@/components/StdButton";
 import { Entypo, MaterialIcons } from '@expo/vector-icons';    
 import React, { useState, useCallback } from "react";
@@ -12,6 +12,10 @@ import axios from "axios";
 import NumberInput from "@/components/NumberInput";
 import ExportTxtData from "@/components/ExportTxtData";
 
+
+interface ReceitasDropDown extends ItemType<number> {
+    decimal: boolean
+}
 
 type LogProducao = {
     id: number,
@@ -35,7 +39,7 @@ type ProducaoBodyData = {
 export default function transmissionScreen() {
     const [openPicker, setOpenPicker] = useState(false);
     const [value, setValue] = useState<number | null>(null);
-    const [receitas, setReceitas] = useState<{value: number,label: string}[]>([]);
+    const [receitas, setReceitas] = useState<ReceitasDropDown[]>([]);
     const [modalVisible, setModalVisible] = useState(false)
     const [logProducao, setLogProducao] = useState<LogProducao[]>([])
     const [conProps, setConProps] = useState<ConProps>()
@@ -57,10 +61,12 @@ export default function transmissionScreen() {
         `
         const queryReceitas = `
             SELECT 
-                id as value,
-                id_produto || ' - ' || descricao as label
-            FROM receita
-            ORDER BY descricao;
+                r.id as value,
+                r.id_produto || ' - ' || descricao as label,
+                p.decimal
+            FROM receita r
+            JOIN produto p ON p.id = r.id_produto
+            ORDER BY r.descricao;
         `
 
         const queryLogProducao = `
@@ -82,7 +88,7 @@ export default function transmissionScreen() {
         `
 
         const conPropsRes = db.getFirstSync<ConProps>(queryConProps, [])
-        const receitasRes = db.getAllSync<{value: number,label: string}>(queryReceitas, [])
+        const receitasRes = db.getAllSync<ReceitasDropDown>(queryReceitas, [])
         const logProducaoRes = db.getAllSync<LogProducao>(queryLogProducao, [conPropsRes?.id_currentstore ?? 1])
 
         setConProps(conPropsRes ?? undefined)
@@ -144,17 +150,25 @@ export default function transmissionScreen() {
     }
 
     const handleOk = () => {
-        if(value !== undefined && parseFloat(quantityProduced) > 0) {
+        const quantityProducedWithDot = quantityProduced.replace(",", ".")
+
+        if(value !== undefined && parseFloat(quantityProducedWithDot) > 0) {
             const insertQuery = `INSERT INTO logproducao 
                             (id_loja, id_receita, id_tipoentradasaida, quantidade, transmitido)
                             VALUES
                             (?, ?, ?, ?, ?);`
     
-            db.runSync(insertQuery, [conProps?.id_currentstore ?? 1, value, 0, quantityProduced, 0])
+            db.runSync(insertQuery, [conProps?.id_currentstore ?? 1, value, 0, quantityProducedWithDot, 0])
             setValue(null)
             setQuantityProduced("")
             getData()
         }
+    }
+
+    const handleCancelLanc = () => {
+        setValue(null)
+        setQuantityProduced("")
+        setModalVisible(false)
     }
 
     return (
@@ -231,14 +245,20 @@ export default function transmissionScreen() {
                         
                     </View>
                     <View style={{flexDirection: 'row'}}>
-                        <NumberInput value={quantityProduced} setValue={setQuantityProduced} placeholder="Quantidade" style={{borderColor: '#888888'}} textInputStyle={{color: 'black'}} decimal={true}/>
+                        <NumberInput 
+                            value={quantityProduced} 
+                            setValue={setQuantityProduced} 
+                            placeholder="Quantidade" 
+                            style={{borderColor: '#888888'}} 
+                            textInputStyle={{color: 'black'}} 
+                            decimal={receitas.find((receita) => receita.value === value)?.decimal}/>
                     </View>
                     <View style={{flexDirection: 'row', justifyContent: 'space-between', marginTop: 25, gap: 10}}>
                         <StdButton 
                             title="CANCELAR"
                             style={{position: 'relative', height: 50, width: 125, backgroundColor: 'white', borderColor: '#888888', borderWidth: 1}}
                             titleStyle={{color: '#888888'}}
-                            onPress={() => setModalVisible(false)}/>
+                            onPress={handleCancelLanc}/>
                         <StdButton 
                             title="OK"
                             style={{position: 'relative', height: 50, width: 125}}

@@ -158,7 +158,7 @@ export default function troca() {
                         value={embalagem} 
                         setValue={setEmbalagem} 
                         label="Embalagem"
-                        decimal={selectedProduct?.decimal}
+                        decimal={false}
                         ref={embalagemInputRef}/>
                     <NumberInput 
                         placeholder="Total" 

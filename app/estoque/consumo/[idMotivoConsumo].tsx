@@ -104,6 +104,8 @@ export default function consumo() {
                 db.runSync(insertQuery, 
                     [currentStoreId, selectedProduct.codigobarras, selectedProduct.id, add ? 0 : 1, idMotivoConsumoFixed, totalQuantity, 0]
                 )
+
+                console.log(currentStoreId, selectedProduct.codigobarras, selectedProduct.id, add ? 0 : 1, idMotivoConsumoFixed, totalQuantity, 0)
     
     
                 setBarcode("")
@@ -156,7 +158,7 @@ export default function consumo() {
                         value={embalagem} 
                         setValue={setEmbalagem} 
                         label="Embalagem"
-                        decimal={selectedProduct?.decimal}
+                        decimal={false}
                         ref={embalagemInputRef}/>
                     <NumberInput 
                         placeholder="Total" 
