@@ -24,6 +24,12 @@ type LogConsumo = {
     transmitido: number
 }
 
+interface TransmissionListContent<LogType> {
+    label: string;
+    field: keyof LogType;
+    dataType: "text" | "localeString";
+}
+
 type MotivoConsumo = {
     value: number,
     label: string
@@ -46,7 +52,14 @@ export default function transmissionScreen() {
     const [logConsumo, setLogConsumo] = useState<LogConsumo[]>([])
     const [conProps, setConProps] = useState<ConProps>()
     const [transmitModal, setTransmitModal] = useState<boolean>(false)
-    
+
+
+    const transmissionListContentConfig: TransmissionListContent<LogConsumo>[] = [
+        {label: 'Tipo Consumo: ', field: 'desc_motivo_consumo', dataType: "text"},
+        {label: 'Código Interno: ', field: 'id_produto', dataType: "text"},
+        {label: 'Produto: ', field: 'descricaocompleta', dataType: "text"},
+        {label: 'Código de Barras: ', field: 'codigobarras', dataType: "text"},
+        {label: 'Quantidade Coletada: ', field: 'quantidade', dataType: "localeString"}]
 
     const getData = () => {
         const queryConProps = `
@@ -219,12 +232,7 @@ export default function transmissionScreen() {
                     style={{marginVertical: 15}}
                     data={logConsumo}
                     onDelete={onDelete}
-                    content={[
-                        {label: 'Tipo Consumo: ', field: 'desc_motivo_consumo', dataType: "text"},
-                        {label: 'Código Interno: ', field: 'id_produto', dataType: "text"},
-                        {label: 'Produto: ', field: 'descricaocompleta', dataType: "text"},
-                        {label: 'Código de Barras: ', field: 'codigobarras', dataType: "text"},
-                        {label: 'Quantidade Coletada: ', field: 'quantidade', dataType: "localeString"}]}/>
+                    content={transmissionListContentConfig}/>
             </View>          
             
             <StdButton 

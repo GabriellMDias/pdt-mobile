@@ -122,9 +122,9 @@ export const screensConfig: ScreenGroup[] = [
             {
                 id: 13,
                 name: "Balanço",
-                route: "/developing",
+                route: "/estoque/balanco/transmissionScreen",
                 icon: (size, color) => <FontAwesome5 name="clipboard-list" size={size} color={color} />,
-                table: null
+                table: 'logbalancoitem'
             },
             {
                 id: 14,

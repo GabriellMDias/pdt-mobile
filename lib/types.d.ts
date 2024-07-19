@@ -25,3 +25,17 @@ type ConProps = {
     portext: string
     portint: string
 }
+
+type Balanco = {
+    id: number,
+    id_loja: number,
+    descricao: string,
+    estoque: string,
+    id_situacaobalanco: number
+}
+
+interface TransmissionListContent<LogType> {
+    label: string;
+    field: keyof LogType;
+    dataType: "text" | "localeString";
+}

@@ -45,8 +45,9 @@ export default async function synchronize(ipInt: string, portInt: string, ipExt:
     const recipes = await API.post<Recipe[]>('/sync/recipes', {idLoja: idCurentStore})
     const tiposmotivotroca = await API.get<TipoLancamento[]>('/sync/tipomotivotroca');
     const tiposconsumo = await API.get<TipoLancamento[]>('/sync/tipoconsumo');
+    const balancos = await API.post<Balanco[]>('/sync/balancos', {idLoja: idCurentStore});
 
-    const tables = ['tipomotivotroca', 'produto', 'tipoembalagem', 'tipoconsumo', 'loja', 'receita'];
+    const tables = ['tipomotivotroca', 'produto', 'tipoembalagem', 'tipoconsumo', 'loja', 'receita', 'balanco'];
 
     db.withTransactionSync(() => {
             // Delete saved Data
@@ -130,6 +131,13 @@ export default async function synchronize(ipInt: string, portInt: string, ipExt:
                 db.runSync(sql, [tipoconsumo.id, tipoconsumo.descricao]);
             });
             console.log("Tipos consumo Sincronizado!");
+
+            //Sync balancos
+            balancos.data.forEach((balanco) => {
+                const sql = `INSERT INTO balanco (id, id_loja, descricao, estoque, id_situacaobalanco) VALUES (?, ?, ?, ?, ?);`
+                db.runSync(sql, [balanco.id, balanco.id_loja, balanco.descricao, balanco.estoque, balanco.id_situacaobalanco])
+            })
+            console.log('Balanços sincronizados!')
         }
     )
 }

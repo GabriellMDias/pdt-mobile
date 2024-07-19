@@ -94,7 +94,23 @@ export default class DatabaseInit {
                 CREATE TABLE IF NOT EXISTS favoritos (
                     id_screen INTEGER PRIMARY KEY
                 )
-            `
+            `,
+            `CREATE TABLE IF NOT EXISTS balanco (
+                id INTEGER NOT NULL,
+                id_loja INTEGER NOT NULL,
+                descricao TEXT NOT NULL,
+                estoque TEXT NOT NULL,
+                id_situacaobalanco INTEGER NOT NULL
+            )`,
+            `CREATE TABLE IF NOT EXISTS logbalancoitem (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                codigobarras numeric(14,0) NOT NULL,
+                id_balanco INTEGER NOT NULL,
+                id_produto INTEGER NOT NULL,
+                id_tipoentradasaida integer NOT NULL,
+                quantidade numeric(18,3) NOT NULL,
+                transmitido boolean NOT NULL
+            )`
         ];
 
         for (var i = 0; i < sql.length; i++) {

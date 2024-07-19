@@ -1,7 +1,8 @@
 import React from 'react';
-import {FlatList, StyleProp, StyleSheet, Text, View, ViewStyle} from 'react-native';
+import {FlatList, StyleProp, StyleSheet, Text, TouchableOpacity, View, ViewStyle} from 'react-native';
 import {GestureHandlerRootView, Swipeable} from 'react-native-gesture-handler';
 import { AntDesign } from '@expo/vector-icons';
+import { router } from 'expo-router';
 
 interface props {
     data: any,
@@ -9,11 +10,19 @@ interface props {
       label: string, 
       field: string,
       dataType: "text" | "localeString"}[],
-    style: StyleProp<ViewStyle>
-    onDelete: (id: number) => void
+    style: StyleProp<ViewStyle>,
+    onDelete: (id: number) => void,
+    onPressRoute?: string
 }
 
-export const TransmissionList = ({data, content, style, onDelete}: props) => {
+export const TransmissionList = ({data, content, style, onDelete, onPressRoute}: props) => {
+
+  const onPress = (id: number) => {
+    if(onPressRoute !== undefined) {
+      console.log(`${onPressRoute}/${id}`)
+      router.navigate(`${onPressRoute}/${id}`)
+    }
+  }
 
   const renderLeftActions = () => {
     return (
@@ -25,8 +34,13 @@ export const TransmissionList = ({data, content, style, onDelete}: props) => {
   
   const Item = ({dataItem}: {dataItem: any}) => (
     <GestureHandlerRootView>
-      <Swipeable renderLeftActions={renderLeftActions} containerStyle={{marginBottom: 10}} onSwipeableOpen={() => onDelete(dataItem.id)}>
-        <View style={[styles.outerContainer]}>
+      <Swipeable 
+        renderLeftActions={renderLeftActions} 
+        containerStyle={{marginBottom: 10}} 
+        onSwipeableOpen={() => onDelete(dataItem.id)}
+        >
+          <TouchableOpacity onPress={() => onPress(dataItem.id)} activeOpacity={1}>
+            <View style={[styles.outerContainer]}>
                 <View style={styles.removeBackground}>
                     <AntDesign name="delete" size={40} color="white" />
                 </View>
@@ -50,19 +64,26 @@ export const TransmissionList = ({data, content, style, onDelete}: props) => {
                             );
                         })}
                       </View>
-                        {dataItem.transmitido ? (
+                        {dataItem.transmitido === 1 ? (
                               <View style={[styles.transmissionStatusContainer, { backgroundColor: 'green' }]}>
                                   <AntDesign name="checkcircle" size={40} color="white" />
                                   <Text style={styles.textWhite}>Transmitido</Text>
                               </View>
-                          ) : (
+                          ) : dataItem.transmitido === 0 ? (
                               <View style={[styles.transmissionStatusContainer, { backgroundColor: '#FE0000' }]}>
                                   <AntDesign name="closecircle" size={40} color="white" />
                                   <Text style={styles.textWhite}>Não Transmitido</Text>
                               </View>
+                          ) : (
+                            <View style={[styles.transmissionStatusContainer, { backgroundColor: '#FFCB2F' }]}>
+                                <AntDesign name="minuscircle" size={40} color="white" />
+                                <Text style={styles.textWhite}>Parcialmente Transmitido</Text>
+                            </View>
                           )}
                     </View>
             </View>
+          </TouchableOpacity>
+          
       </Swipeable>
     </GestureHandlerRootView>
   );
@@ -75,7 +96,8 @@ export const TransmissionList = ({data, content, style, onDelete}: props) => {
     <View style={[styles.container, style]}>
       <FlatList
         data={data}
-        renderItem={i => renderItem(i.item)}
+        renderItem={i => renderItem(i.item)
+        }
       />
     </View>
   );
