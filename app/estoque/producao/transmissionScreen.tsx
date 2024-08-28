@@ -11,6 +11,7 @@ import { TransmissionList } from "@/components/TransmissionList";
 import axios from "axios";
 import NumberInput from "@/components/NumberInput";
 import ExportTxtData from "@/components/ExportTxtData";
+import { ConProps, getConProps } from "@/utils/getConProps";
 
 
 interface ReceitasDropDown extends ItemType<number> {
@@ -48,17 +49,6 @@ export default function transmissionScreen() {
     
 
     const getData = () => {
-        const queryConProps = `
-            SELECT
-                devicename,
-                ipint,
-                portint,
-                ipext,
-                portext,
-                id_currentstore,
-                lastsync
-            FROM conprops WHERE id = 1;
-        `
         const queryReceitas = `
             SELECT 
                 r.id as value,
@@ -87,11 +77,11 @@ export default function transmissionScreen() {
             ORDER BY lp.transmitido, lp.id;
         `
 
-        const conPropsRes = db.getFirstSync<ConProps>(queryConProps, [])
+        const conPropsRes = getConProps()
         const receitasRes = db.getAllSync<ReceitasDropDown>(queryReceitas, [])
-        const logProducaoRes = db.getAllSync<LogProducao>(queryLogProducao, [conPropsRes?.id_currentstore ?? 1])
+        const logProducaoRes = db.getAllSync<LogProducao>(queryLogProducao, [conPropsRes.id_currentstore])
 
-        setConProps(conPropsRes ?? undefined)
+        setConProps(conPropsRes)
         setReceitas(receitasRes)
         setLogProducao(logProducaoRes)
     }

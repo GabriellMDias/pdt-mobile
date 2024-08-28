@@ -8,6 +8,8 @@ import { router, Stack, useFocusEffect } from "expo-router"
 import { useCallback, useState } from "react"
 import { View, Text, Alert } from "react-native"
 import axios from "axios";
+import { ConProps, getConProps } from "@/utils/getConProps";
+import { LastSync } from "@/components/LastSync";
 
 interface LogBalancoTotal extends Balanco{
     qtd_transmitida: number,
@@ -54,18 +56,6 @@ export default function transmissionScreen(){
 
 
     const getData = () => {
-        const queryConProps = `
-            SELECT
-                devicename,
-                ipint,
-                portint,
-                ipext,
-                portext,
-                id_currentstore,
-                lastsync
-            FROM conprops WHERE id = 1;
-        `
-
         const queryBalancos = `
             SELECT
                 id as value,
@@ -112,12 +102,12 @@ export default function transmissionScreen(){
             ORDER BY lbi.transmitido, lbi.id;
         `
 
-        const conPropsRes = db.getFirstSync<ConProps>(queryConProps, [])
+        const conPropsRes = getConProps()
         const balancosRes = db.getAllSync<ItemType<number>>(queryBalancos, conPropsRes?.id_currentstore ?? 1)
         const logBalancoTotalRes = db.getAllSync<LogBalancoTotal>(queryLogBalancoTotal, conPropsRes?.id_currentstore ?? 1)
         const logBalancoItemRes = db.getAllSync<LogBalancoItem>(queryLogBalancoItemsNotTransmit, [])
 
-        setConProps(conPropsRes ?? undefined)
+        setConProps(conPropsRes)
         setBalancos(balancosRes)
         setLogBalancoTotal(logBalancoTotalRes)
         setLogBalancoItemsNotTransmit(logBalancoItemRes)
@@ -222,21 +212,7 @@ export default function transmissionScreen(){
                     />
 
             <View style={{flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center'}}>
-                <View>
-                    <Text style={{color: '#888888'}}>Última Sincronização:</Text>
-                    <Text style={{color: '#888888'}}>
-                        {conProps !== undefined 
-                        ? (new Date(conProps.lastsync)).toLocaleString('pt-BR', {
-                            day: '2-digit',
-                            month: '2-digit',
-                            year: 'numeric',
-                            hour: '2-digit',
-                            minute: '2-digit',
-                            second: '2-digit'
-                          })
-                        : ""}
-                    </Text>
-                </View>
+                <LastSync />
                 <StdButton 
                     title="Transmitir" 
                     icon={<Entypo name="paper-plane" size={24} color="white" />} 

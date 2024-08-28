@@ -8,11 +8,12 @@ import { AntDesign } from '@expo/vector-icons';
 import { db } from '@/database/database-connection';
 import synchronize from '@/app/config/sync'
 import ModalMessage from '@/components/ModalMessage';
+import { ConProps, getConProps } from '@/utils/getConProps';
 
 export default function Home() {
   const [isDrawerOpen, setIsDrawerOpen] = useState(false);
   const [favoriteScreensIds, setFavoriteScreensIds] = useState<number[]>()
-  const [conProps, setConProps] = useState<ConProps | null>(null)
+  const [conProps, setConProps] = useState<ConProps>()
   const [syncModal, setSyncModal] = useState<boolean>(false)
   const drawerAnim = useRef(new Animated.Value(0)).current;
 
@@ -23,14 +24,13 @@ export default function Home() {
   }
 
   const getUserData = () => {
-    const conPropsQuery = `SELECT * FROM conprops;`
-    const conPropsRes = db.getFirstSync<ConProps>(conPropsQuery, [])
+    const conPropsRes = getConProps()
     setConProps(conPropsRes)
 
   }
 
   const handleSync = async () => {
-    if(conProps !== null) {
+    if(conProps !== undefined) {
       setSyncModal(true)
       try {
         await synchronize(conProps?.ipint, conProps?.portint, conProps?.ipext, conProps?.portext, conProps?.id_currentstore)
@@ -118,7 +118,7 @@ export default function Home() {
             
             <Text style={styles.drawerText}>Dispositivo: {conProps?.devicename}</Text>
             <Text style={styles.drawerText}>Loja Selecionada: {conProps?.id_currentstore}</Text>
-            <Text style={styles.drawerText}>Última sincronização: {conProps !== null 
+            <Text style={styles.drawerText}>Última sincronização: {conProps !== undefined 
                         ? (new Date(conProps.lastsync)).toLocaleString('pt-BR', {
                             day: '2-digit',
                             month: '2-digit',

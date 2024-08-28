@@ -10,6 +10,7 @@ import ModalMessage from "@/components/ModalMessage";
 import { TransmissionList } from "@/components/TransmissionList";
 import axios from "axios";
 import ExportTxtData from "@/components/ExportTxtData";
+import { ConProps, getConProps } from "@/utils/getConProps";
 
 
 type LogTroca = {
@@ -49,17 +50,6 @@ export default function transmissionScreen() {
     
 
     const getData = () => {
-        const queryConProps = `
-            SELECT
-                devicename,
-                ipint,
-                portint,
-                ipext,
-                portext,
-                id_currentstore,
-                lastsync
-            FROM conprops WHERE id = 1;
-        `
         const queryMotivosTroca = `
             SELECT 
                 id as value,
@@ -87,11 +77,11 @@ export default function transmissionScreen() {
             ORDER BY lt.transmitido, lt.id;
         `
 
-        const conPropsRes = db.getFirstSync<ConProps>(queryConProps, [])
+        const conPropsRes = getConProps()
         const motivosTrocaRes = db.getAllSync<MotivoTroca>(queryMotivosTroca, [])
         const logTrocaRes = db.getAllSync<LogTroca>(queryLogTroca, [conPropsRes?.id_currentstore ?? 1])
 
-        setConProps(conPropsRes ?? undefined)
+        setConProps(conPropsRes)
         setMotivosTroca(motivosTrocaRes)
         setLogTroca(logTrocaRes)
         

@@ -7,6 +7,7 @@ import AddRadio from "@/components/AddRadio";
 import StdButton from "@/components/StdButton";
 import { Stack, useLocalSearchParams } from "expo-router";
 import { db } from "@/database/database-connection";
+import { ConProps, getConProps } from "@/utils/getConProps";
 
 type TotalCollectedPerProduct = {
     id: number, 
@@ -35,7 +36,8 @@ export default function troca() {
 
     useEffect(() => {
         getTrocaInfo()
-        getConProps()
+        const conPropsRes = getConProps()
+        setConProps(conPropsRes)
         getTotalCollectedPerProduct()
         productInputRef.current?.focus()
     }, [])
@@ -67,22 +69,6 @@ export default function troca() {
         const logTrocaTotalRes = db.getAllSync<TotalCollectedPerProduct>(logTrocaTotalQuery, [conProps?.id_currentstore ?? 1, idMotivoTroca ?? 1])
         console.log(logTrocaTotalRes)
         setTotalCollectedPerProduct(logTrocaTotalRes)
-    }
-
-    const getConProps = () => {
-        const queryConProps = `
-            SELECT
-                devicename,
-                ipint,
-                portint,
-                ipext,
-                portext,
-                id_currentstore,
-                lastsync
-            FROM conprops WHERE id = 1;
-        `
-        const conPropsRes = db.getFirstSync<ConProps>(queryConProps, [])
-        setConProps(conPropsRes ?? undefined)
     }
 
     const handleSave = () => {

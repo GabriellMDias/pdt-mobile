@@ -15,17 +15,6 @@ type Produto = {
     fabricacaopropria: boolean 
 }
 
-type ConProps = {
-    devicename: string
-    id: number
-    id_currentstore: number
-    ipext: string
-    ipint: string
-    lastsync: string
-    portext: string
-    portint: string
-}
-
 type Balanco = {
     id: number,
     id_loja: number,

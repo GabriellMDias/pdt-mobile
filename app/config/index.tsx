@@ -11,6 +11,7 @@ import ModalMessage from '@/components/ModalMessage';
 import axios from 'axios';
 import DropDownPicker from 'react-native-dropdown-picker';
 import StdButton from '@/components/StdButton';
+import { getConProps } from '@/utils/getConProps';
 
 
 
@@ -33,7 +34,7 @@ export default function Config() {
   const [stores, setStores] = useState<{value: number, label: string}[]>([])
 
   useEffect(() => {
-    getConProps()
+    setConProps()
   }, []);
 
   useEffect(()=>{
@@ -41,17 +42,17 @@ export default function Config() {
   }, [ipInt, ipExt, portInt, portExt, deviceName])
   
 
-  const getConProps = () => {
-    const conProps = db.getFirstSync<ConProps>('SELECT * FROM conprops;', [])
+  const setConProps = () => {
+    const conProps = getConProps()
 
-    onChangeDeviceName(conProps?.devicename ?? "")
-    onChangeIpInt(conProps?.ipint ?? "")
-    onChangePortInt(conProps?.portint ?? "")
-    onChangeIpExt(conProps?.ipext ?? "")
-    onChangePortExt(conProps?.portext ?? "")
+    onChangeDeviceName(conProps.devicename)
+    onChangeIpInt(conProps.ipint)
+    onChangePortInt(conProps.portint)
+    onChangeIpExt(conProps.ipext)
+    onChangePortExt(conProps.portext)
       
     setIsLoading(false)
-    if(conProps?.devicename !== null) {
+    if(conProps.devicename !== "") {
       setDeviceNameSaved(true)
     }
   }

@@ -10,6 +10,7 @@ import ModalMessage from "@/components/ModalMessage";
 import { TransmissionList } from "@/components/TransmissionList";
 import ExportTxtData from "@/components/ExportTxtData";
 import axios from "axios";
+import { ConProps, getConProps } from "@/utils/getConProps";
 
 
 type LogConsumo = {
@@ -62,17 +63,6 @@ export default function transmissionScreen() {
         {label: 'Quantidade Coletada: ', field: 'quantidade', dataType: "localeString"}]
 
     const getData = () => {
-        const queryConProps = `
-            SELECT
-                devicename,
-                ipint,
-                portint,
-                ipext,
-                portext,
-                id_currentstore,
-                lastsync
-            FROM conprops WHERE id = 1;
-        `
         const queryTiposConsumo = `
             SELECT 
                 id as value,
@@ -100,11 +90,11 @@ export default function transmissionScreen() {
         ORDER BY lc.transmitido, lc.id;
         `
 
-        const conPropsRes = db.getFirstSync<ConProps>(queryConProps, [])
+        const conPropsRes = getConProps()
         const tiposConsumoRes = db.getAllSync<MotivoConsumo>(queryTiposConsumo, [])
         const logConsumoRes = db.getAllSync<LogConsumo>(queryLogConsumo, [conPropsRes?.id_currentstore ?? 1])
 
-        setConProps(conPropsRes ?? undefined)
+        setConProps(conPropsRes)
         setTiposConsumo(tiposConsumoRes)
         setLogConsumo(logConsumoRes)
     }

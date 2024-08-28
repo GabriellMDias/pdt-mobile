@@ -2,6 +2,7 @@ import DatabaseInit from "@/database/database-init";
 import { db } from "@/database/database-connection"
 import { useState, useEffect } from "react";
 import { router } from 'expo-router';
+import { getConProps } from "@/utils/getConProps";
 
 export default function Index() {
   const [isRouterMounted, setIsRouterMounted] = useState(false);
@@ -15,8 +16,8 @@ export default function Index() {
 
   // Navigate to "/screens/home" after root component is mounted
   useEffect(() => {
-    const conProps = db.getFirstSync<ConProps>("SELECT * FROM conprops;", [])
-    if(conProps?.lastsync === null && isRouterMounted) {
+    const conProps = getConProps()
+    if(conProps?.lastsync === "" && isRouterMounted) {
       router.replace("/config");
     }
     else if (isRouterMounted) {
