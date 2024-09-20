@@ -155,7 +155,7 @@ export default function transmissionScreen(){
                 setTransmitModal(true)
 
 
-                const postResponse = await axios.post<BalancoBodyData[]>(`http://${conProps?.ipint}:${conProps?.portint}/transmit/lancamentobalanco`, bodyDataSummedUp, {timeout: 60000})
+                const postResponse = await axios.post<BalancoBodyData[]>(`http://${conProps?.ipint}:${conProps?.portint}/transmit/lancamentobalanco`, bodyDataSummedUp, {timeout: 1800000})
                 
                 
                 if(postResponse.status === 200) {

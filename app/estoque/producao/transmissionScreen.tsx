@@ -1,10 +1,10 @@
 import { Stack } from "expo-router";
-import { View, Text, StyleSheet, Alert } from "react-native";
+import { View, Text, StyleSheet, Alert, TextInput, Keyboard } from "react-native";
 import { useFocusEffect } from '@react-navigation/native';
 import DropDownPicker, { type ItemType } from 'react-native-dropdown-picker';
 import StdButton from "@/components/StdButton";
 import { Entypo, MaterialIcons } from '@expo/vector-icons';    
-import React, { useState, useCallback } from "react";
+import React, { useState, useCallback, useRef } from "react";
 import { db } from "@/database/database-connection";
 import ModalMessage from "@/components/ModalMessage";
 import { TransmissionList } from "@/components/TransmissionList";
@@ -45,6 +45,9 @@ export default function transmissionScreen() {
     const [conProps, setConProps] = useState<ConProps>()
     const [quantityProduced, setQuantityProduced] = useState<string>('')
     const [transmitModal, setTransmitModal] = useState<boolean>(false)
+
+    const dropDownPickerRef = useRef<TextInput>(null);
+    const quantityInputRef = useRef<TextInput>(null)
     
 
     const getData = () => {
@@ -101,6 +104,15 @@ export default function transmissionScreen() {
             getData
     , []))
 
+    const openProductionModal = () => {
+        setModalVisible(true)
+        setOpenPicker(true)
+
+        setTimeout(() => {
+            dropDownPickerRef.current?.focus();  // Foca na caixa de pesquisa
+        }, 100);
+    }
+
     const handleTransmit = async () => {
         const logProducaoNotTransmit = logProducao.filter((item) => item.transmitido === 0)
 
@@ -115,7 +127,7 @@ export default function transmissionScreen() {
         if(logProducaoNotTransmit.length > 0) {
             try {
                 setTransmitModal(true)
-                const postResponse = await axios.post<ProducaoBodyData[]>(`http://${conProps?.ipint}:${conProps?.portint}/transmit/lancamentoproducao`, bodyData, {timeout: 60000})
+                const postResponse = await axios.post<ProducaoBodyData[]>(`http://${conProps?.ipint}:${conProps?.portint}/transmit/lancamentoproducao`, bodyData, {timeout: 1800000})
                 if(postResponse.status === 200) {
                     const logProducaoTransmitted = logProducaoNotTransmit.filter((producaoNotTransmit) => postResponse.data.map((item) => item.idProduto).includes(producaoNotTransmit.id_produto))
                     const logProducaoNotTransmitted = logProducaoNotTransmit.filter((producaoNotTransmit) => !postResponse.data.map((item) => item.idProduto).includes(producaoNotTransmit.id_produto))
@@ -162,6 +174,10 @@ export default function transmissionScreen() {
             setValue(null)
             setQuantityProduced("")
             getData()
+            setOpenPicker(true)
+            setTimeout(() => {
+                dropDownPickerRef.current?.focus();  // Foca na caixa de pesquisa
+            }, 100);
         }
     }
 
@@ -217,7 +233,7 @@ export default function transmissionScreen() {
             <StdButton 
                 style={{right: 0, bottom:50, width: 60, height: 60, borderRadius: 30}} 
                 icon={<Entypo name="plus" size={40} color="white" />}
-                onPress={() => setModalVisible(true)}/>
+                onPress={openProductionModal}/>
 
             <ModalMessage 
                 modalVisible={modalVisible}
@@ -230,6 +246,8 @@ export default function transmissionScreen() {
                     <View style={{flexDirection: 'row'}}>
                         <DropDownPicker
                             placeholder="Selecionar Produto"
+                            searchTextInputProps={{ref: dropDownPickerRef}}
+                            onSelectItem={() => quantityInputRef.current?.focus()}
                             open={openPicker}
                             value={value}
                             items={receitas}
@@ -241,6 +259,8 @@ export default function transmissionScreen() {
                             textStyle={{color: '#888888'}}
                             searchable={true}
                             translation={{SEARCH_PLACEHOLDER: 'Pesquisar...'}}
+                            scrollViewProps={{keyboardShouldPersistTaps: "always"}}
+                            flatListProps={{keyboardShouldPersistTaps: "always"}}
                         />    
                         
                     </View>
@@ -251,7 +271,8 @@ export default function transmissionScreen() {
                             placeholder="Quantidade" 
                             style={{borderColor: '#888888'}} 
                             textInputStyle={{color: 'black'}} 
-                            decimal={receitas.find((receita) => receita.value === value)?.decimal}/>
+                            decimal={receitas.find((receita) => receita.value === value)?.decimal}
+                            ref={quantityInputRef}/>
                     </View>
                     <View style={{flexDirection: 'row', justifyContent: 'space-between', marginTop: 25, gap: 10}}>
                         <StdButton 

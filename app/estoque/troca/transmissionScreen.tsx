@@ -129,7 +129,7 @@ export default function transmissionScreen() {
         if (logTrocaNotTransmit.length > 0){
             try {
                 setTransmitModal(true)
-                const postResponse = await axios.post<TrocaBodyData[]>(`http://${conProps?.ipint}:${conProps?.portint}/transmit/lancamentotroca`, bodyDataSummedUp, {timeout: 60000})
+                const postResponse = await axios.post<TrocaBodyData[]>(`http://${conProps?.ipint}:${conProps?.portint}/transmit/lancamentotroca`, bodyDataSummedUp, {timeout: 1800000})
                 if(postResponse.status === 200) {
                     const logTrocaTransmitted = logTrocaNotTransmit.
                                                     filter((trocaNotTransmit) => 
