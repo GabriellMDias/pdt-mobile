@@ -2,6 +2,7 @@ import ModalMessage from "@/components/ModalMessage"
 import StdButton from "@/components/StdButton"
 import { TransmissionList } from "@/components/TransmissionList"
 import { db } from "@/database/database-connection"
+import { ConProps, getConProps } from "@/utils/getConProps"
 import { Entypo, MaterialIcons } from "@expo/vector-icons"
 import axios from "axios"
 import { router, Stack, useFocusEffect, useLocalSearchParams } from "expo-router"
@@ -42,18 +43,6 @@ export default function balancoItems() {
     ]
 
     const getData = () => {
-        const queryConProps = `
-            SELECT
-                devicename,
-                ipint,
-                portint,
-                ipext,
-                portext,
-                id_currentstore,
-                lastsync
-            FROM conprops WHERE id = 1;
-        `
-
         const queryLogBalancoItem = `
             SELECT DISTINCT
                 lbi.id,
@@ -71,10 +60,10 @@ export default function balancoItems() {
         `
 
         if(idBalanco !== undefined) {
-            const conPropsRes = db.getFirstSync<ConProps>(queryConProps, [])
+            const conPropsRes = getConProps()
             const logBalancoItemRes = db.getAllSync<LogBalancoItem>(queryLogBalancoItem, [idBalanco])
 
-            setConProps(conPropsRes ?? undefined)
+            setConProps(conPropsRes)
             setLogBalancoItem(logBalancoItemRes)
         }
     }

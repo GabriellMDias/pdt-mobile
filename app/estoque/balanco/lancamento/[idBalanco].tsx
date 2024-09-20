@@ -3,6 +3,7 @@ import NumberInput from "@/components/NumberInput";
 import ProductInput from "@/components/ProductInput";
 import StdButton from "@/components/StdButton";
 import { db } from "@/database/database-connection";
+import { ConProps, getConProps } from "@/utils/getConProps";
 import { FontAwesome } from "@expo/vector-icons";
 import { Stack, useLocalSearchParams } from "expo-router";
 import { useEffect, useRef, useState } from "react";
@@ -35,7 +36,9 @@ export default function lancamentoBalancoItem() {
 
     useEffect(() => {
         getBalancoInfo()
-        getConProps()
+        const conPropsRes = getConProps()
+        setConProps(conPropsRes)
+
         getTotalCollectedPerProduct()
         productInputRef.current?.focus()
     }, [])
@@ -46,22 +49,6 @@ export default function lancamentoBalancoItem() {
 
         const currentStoreIdRes = db.getFirstSync<{id_currentstore: number}>('SELECT id_currentstore FROM conprops WHERE id = 1;')
         setCurrentStoreId(currentStoreIdRes?.id_currentstore ?? 1)
-    }
-
-    const getConProps = () => {
-        const queryConProps = `
-            SELECT
-                devicename,
-                ipint,
-                portint,
-                ipext,
-                portext,
-                id_currentstore,
-                lastsync
-            FROM conprops WHERE id = 1;
-        `
-        const conPropsRes = db.getFirstSync<ConProps>(queryConProps, [])
-        setConProps(conPropsRes ?? undefined)
     }
 
     const getTotalCollectedPerProduct = () => {
