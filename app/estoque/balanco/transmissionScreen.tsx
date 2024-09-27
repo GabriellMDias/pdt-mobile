@@ -1,12 +1,12 @@
+import { router, Stack, useFocusEffect } from "expo-router"
+import { View, Alert } from "react-native"
+import DropDownPicker, { type ItemType } from 'react-native-dropdown-picker';
 import ModalMessage from "@/components/ModalMessage"
 import StdButton from "@/components/StdButton"
-import DropDownPicker, { type ItemType } from 'react-native-dropdown-picker';
-import { TransmissionList } from "@/components/TransmissionList"
-import { db } from "@/database/database-connection"
 import { Entypo, MaterialIcons } from "@expo/vector-icons"
-import { router, Stack, useFocusEffect } from "expo-router"
 import { useCallback, useState } from "react"
-import { View, Text, Alert } from "react-native"
+import { db } from "@/database/database-connection"
+import { TransmissionList } from "@/components/TransmissionList"
 import axios from "axios";
 import { ConProps, getConProps } from "@/utils/getConProps";
 import { LastSync } from "@/components/LastSync";
@@ -212,7 +212,7 @@ export default function transmissionScreen(){
                     />
 
             <View style={{flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center'}}>
-                <LastSync />
+                <LastSync conProps={conProps}/>
                 <StdButton 
                     title="Transmitir" 
                     icon={<Entypo name="paper-plane" size={24} color="white" />} 

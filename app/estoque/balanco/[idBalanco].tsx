@@ -1,3 +1,4 @@
+import ExportTxtData from "@/components/ExportTxtData"
 import ModalMessage from "@/components/ModalMessage"
 import StdButton from "@/components/StdButton"
 import { TransmissionList } from "@/components/TransmissionList"
@@ -154,7 +155,8 @@ export default function balancoItems() {
             <Stack.Screen
                         options={{
                         title: 'Balanco',
-                        headerTitle: 'Balanço'
+                        headerTitle: 'Balanço',
+                        headerRight: () => <ExportTxtData data={logBalancoItem} fileName="balanco"/>
                         }}
                     />
             

@@ -1,16 +1,7 @@
-import { ConProps, getConProps } from "@/utils/getConProps"
-import { useFocusEffect } from "expo-router"
-import { useState } from "react"
+import { ConProps} from "@/utils/getConProps"
 import { View, Text } from "react-native"
 
-export const LastSync = () => {
-    const [conProps, setConProps] = useState<ConProps>()
-
-    useFocusEffect(() => {
-        const conPropsRes = getConProps()
-        setConProps(conPropsRes)
-    })
-    
+export const LastSync = ({conProps} : {conProps: ConProps | undefined}) => {    
     return (
         <View>
             <Text style={{color: '#888888'}}>Última Sincronização:</Text>
