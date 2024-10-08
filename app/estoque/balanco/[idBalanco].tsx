@@ -51,7 +51,10 @@ export default function balancoItems() {
                 p.descricaocompleta as descricao_produto,
                 lbi.codigobarras,
                 lbi.id_tipoentradasaida,
-                lbi.quantidade,
+                CASE
+                    WHEN lbi.id_tipoentradasaida = 0 THEN lbi.quantidade
+                    WHEN lbi.id_tipoentradasaida = 1 THEN -lbi.quantidade
+                END as quantidade,
                 lbi.transmitido
             FROM logbalancoitem lbi
             JOIN produto p ON p.id = lbi.id_produto

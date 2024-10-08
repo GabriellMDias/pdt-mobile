@@ -134,7 +134,8 @@ export default function lancamentoBalancoItem() {
                     suggestBoxVisible={suggestBoxVisible}
                     setSuggestBoxVisible={setSuggestBoxVisible}
                     nextRef={quantityInputRef}
-                    ref={productInputRef}/>
+                    ref={productInputRef}
+                    setQuantity={setQuantity}/>
                 <View style={styles.inputRow}>
                     <NumberInput 
                         placeholder="Quantidade" 

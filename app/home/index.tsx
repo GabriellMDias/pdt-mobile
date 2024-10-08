@@ -128,6 +128,7 @@ export default function Home() {
                           })
                         : ""}
             </Text> 
+            <Text style={styles.drawerText}>Versão: {conProps?.app_version}</Text>
           </View>
           <View>
             <TouchableOpacity style={styles.drawerButton} onPress={handleSync}>

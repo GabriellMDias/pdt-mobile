@@ -10,7 +10,6 @@ export default function Index() {
   // Execute DatabaseInit after component is mounted
   useEffect(() => {
     new DatabaseInit();
-    console.log("initialize database");
     setIsRouterMounted(true); // Indicate that the component root is mounted
   }, []);
 

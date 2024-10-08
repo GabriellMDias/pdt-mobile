@@ -1,4 +1,4 @@
-import { Camera, CameraType, CameraView, FlashMode } from "expo-camera";
+import { BarcodeScanningResult, Camera, CameraType, CameraView, FlashMode } from "expo-camera";
 import { Stack } from "expo-router";
 import React, { useState, forwardRef, useEffect } from "react";
 import { View, TouchableOpacity, TextInput, StyleSheet, Text, StyleProp, ViewStyle, ScrollView, Alert } from "react-native";
@@ -17,10 +17,11 @@ type componentProps = {
     setSelectedProduct: React.Dispatch<React.SetStateAction<Produto | undefined>>,
     suggestBoxVisible: boolean, 
     setSuggestBoxVisible: React.Dispatch<React.SetStateAction<boolean>>,
-    nextRef: React.RefObject<TextInput>
+    nextRef: React.RefObject<TextInput>,
+    setQuantity?: React.Dispatch<React.SetStateAction<string>>
 }
 
-const ProductInput = forwardRef<TextInput, componentProps>(({barCode, setBarcode, style, setSelectedProduct, suggestBoxVisible, setSuggestBoxVisible, nextRef}: componentProps, ref) => {
+const ProductInput = forwardRef<TextInput, componentProps>(({barCode, setBarcode, style, setSelectedProduct, suggestBoxVisible, setSuggestBoxVisible, nextRef, setQuantity}: componentProps, ref) => {
     const [hasPermission, setHasPermission] = useState<boolean | undefined>(undefined);
     const [cameraOpened, setCameraOpened] = useState(false)
     const [flashOn, setFlashOn] = useState<FlashMode>('off')
@@ -82,14 +83,17 @@ const ProductInput = forwardRef<TextInput, componentProps>(({barCode, setBarcode
         setFlashOn(current => (current === 'on' ? 'off' : 'on'));
     }
 
-    const handleBarCodeScanned = ({ data }: { data: any }) => {
-        setBarcode(data)
+    /*Função executada ao encontrar o código de barras*/
+    const handleBarCodeScanned = (scanningResult: BarcodeScanningResult) => {
+        setBarcode(scanningResult.data)
         setCameraOpened(false)
-        onChangeProductInput(data)
-        handleSelectProduct(data)
+        onChangeProductInput(scanningResult.data)
+        handleSelectProduct(scanningResult.data)
     };
 
+    /*Atualiza os dados do produto caso o código seja encontrado*/
     const handleSelectProduct = (product: ProdutoPlus | string) => {
+        /* Quando não for do tipo string, quer dizer que o produto foi selecionado direto das sugestões de produto */
         if (typeof product !== 'string'){
             setSuggestBoxVisible(false)
             setBarcode(product.codigobarras.toString())
@@ -97,6 +101,7 @@ const ProductInput = forwardRef<TextInput, componentProps>(({barCode, setBarcode
             setFilteredProducts([])
             nextRef.current?.focus()
         } else {
+            /* Realiza a busca do produto pelo código de barras */
             const productFound = products?.find((produto) => produto.codigobarras.toString() === product)
             if (productFound) {
                 setSelectedProduct(productFound)
@@ -105,6 +110,7 @@ const ProductInput = forwardRef<TextInput, componentProps>(({barCode, setBarcode
                 setFilteredProducts([])
                 nextRef.current?.focus()
             } else {
+                /* Realiza a busca do produto pelo código */
                 const productId = products?.find((produto) => produto.id === Number(product))
                 console.log(productId)
                 if (productId) {
@@ -114,15 +120,39 @@ const ProductInput = forwardRef<TextInput, componentProps>(({barCode, setBarcode
                     setFilteredProducts([])
                     nextRef.current?.focus()
                 } else {
-                    setErrorMsgVisible(true)
-                    setSelectedProduct(undefined)
-                    setSuggestBoxVisible(false)
+                    /* Separa o código de barras em 2, a parte do id interno e preço para identificar caso seja produto pesável */
+                    const idInt = Number(product.substring(1, 7))
+                    const price = Number(product.substring(7))
+
+                    const productFound = products?.find((produto) => produto.id === idInt)
+
+                    console.log(productFound)
+
+                    /* ADICIONAR VALIDAÇÂO SE O TIPO PRODUTO FOR PESÁVEL!! */
+                    if(productFound){
+                        /* Caso o setQuantity seja passado, será feito o cálculo da quantidade e atibuído à quantity */
+                        if(setQuantity) {
+                            const qtd = ((price/1000)/productFound.precovenda).toFixed(3).replace('.', ',')
+                            setQuantity(qtd)
+                        }
+                        setSelectedProduct(productFound)
+                        setBarcode(product)
+                        setSuggestBoxVisible(false)
+                        setFilteredProducts([])
+                        nextRef.current?.focus()
+                    }else {
+                        /*Caso não encontre o produto aparece mensagem de erro*/
+                        setErrorMsgVisible(true)
+                        setSelectedProduct(undefined)
+                        setSuggestBoxVisible(false)
+                    }
                 }
                 
             }
         }
     }
 
+    /*Procura o produto de acordo com o código lido*/
     const onChangeProductInput = (input: string) => {
         setBarcode(input)
         setSelectedProduct(undefined)

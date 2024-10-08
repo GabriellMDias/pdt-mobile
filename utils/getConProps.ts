@@ -9,18 +9,13 @@ export type ConProps = {
     lastsync: string
     portext: string
     portint: string
+    app_version: string
 }
 
 export const getConProps = () => {
     const queryConProps = `
             SELECT
-                devicename,
-                ipint,
-                portint,
-                ipext,
-                portext,
-                id_currentstore,
-                lastsync
+                *
             FROM conprops WHERE id = 1;`
 
     const conPropsRes = db.getFirstSync<ConProps>(queryConProps, [])
@@ -34,7 +29,8 @@ export const getConProps = () => {
             ipint: "",
             lastsync: "",
             portext: "",
-            portint: "string"
+            portint: "string",
+            app_version: ""
         }
         return emptyConProps
     }
