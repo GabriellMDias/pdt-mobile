@@ -40,7 +40,7 @@ export default function balancoItems() {
         {label: 'Código Interno: ', field: 'id_produto', dataType: "text"},
         {label: 'Descrição: ', field: 'descricao_produto', dataType: "text"},
         {label: 'Código de Barras: ', field: 'codigobarras', dataType: "text"},
-        {label: 'Quantidade coletada: ', field: 'quantidade', dataType: "text"}
+        {label: 'Quantidade coletada: ', field: 'quantidade', dataType: "localeString"}
     ]
 
     const getData = () => {
@@ -81,9 +81,9 @@ export default function balancoItems() {
         if(idBalanco === undefined) {
             return
         }
-
+    
         const logBalancoItemNotTransmit = logBalancoItem.filter((item) => item.transmitido === 0)
-
+    
         const bodyData: BalancoBodyData[] = logBalancoItemNotTransmit.map((item) => {return {
             idLoja: conProps?.id_currentstore,
             idBalanco: parseInt(idBalanco),
@@ -92,7 +92,7 @@ export default function balancoItems() {
             ipTerminal: "192.168.82.30",
             idUser: 66
         }})
-
+    
         const bodyDataSummedUp = Object.values(bodyData.reduce((acc: { [key: string]: BalancoBodyData }, item) => {
             const key = `${item.idLoja}-${item.idBalanco}-${item.idProduto}-${item.idUser}-${item.ipTerminal}`;
             
@@ -104,40 +104,52 @@ export default function balancoItems() {
             
             return acc;
         }, {}));
-        
+    
+        const chunkSize = 500; // Data size
+        const chunkedData = [];
+    
+        // Divide data into smaller pieces
+        for (let i = 0; i < bodyDataSummedUp.length; i += chunkSize) {
+            chunkedData.push(bodyDataSummedUp.slice(i, i + chunkSize));
+        }
+    
         if(logBalancoItemNotTransmit.length > 0) {
             try {
                 setTransmitModal(true)
-
-
-                const postResponse = await axios.post<BalancoBodyData[]>(`http://${conProps?.ipint}:${conProps?.portint}/transmit/lancamentobalanco`, bodyDataSummedUp, {timeout: 1800000})
-                
-                
-                if(postResponse.status === 200) {
-                    const logBalancoItemTransmitted = logBalancoItemNotTransmit.
-                                                    filter((balancoItemNotTransmit) => 
-                                                        postResponse.data.map((item) => item.idProduto).includes(balancoItemNotTransmit.id_produto)
-                                                    )
-
-                    const logBalancoItemNotTransmitted = logBalancoItemNotTransmit.
-                                                        filter((balancoItemNotTransmit) => (
-                                                            !postResponse.data.map((item) => item.idProduto).includes(balancoItemNotTransmit.id_produto)
-                                                        ))
-
-                    if(logBalancoItemNotTransmitted.length > 0) {
-                        Alert.alert('Erro', 
-                            'Não foi possível transmitir alguns produtos. Verifique se estão com o cadastro ativo', 
-                            [{text: 'OK'}])
+    
+                // Enviar os "chunks" sequencialmente
+                for (const chunk of chunkedData) {
+                    const postResponse = await axios.post<BalancoBodyData[]>(`http://${conProps?.ipint}:${conProps?.portint}/transmit/lancamentobalanco`, chunk, {timeout: 1800000})
+    
+                    if(postResponse.status === 200) {
+                        const logBalancoItemTransmitted = logBalancoItemNotTransmit.
+                                                        filter((balancoItemNotTransmit) => 
+                                                            postResponse.data.map((item) => item.idProduto).includes(balancoItemNotTransmit.id_produto)
+                                                        )
+    
+                        // CORRIGIR O CÓDIGO ABAIXO
+                        /*const logBalancoItemNotTransmitted = logBalancoItemNotTransmit.
+                                                            filter((balancoItemNotTransmit) => (
+                                                                !postResponse.data.map((item) => item.idProduto).includes(balancoItemNotTransmit.id_produto)
+                                                            ))
+    
+                        if(logBalancoItemNotTransmitted.length > 0) {
+                            Alert.alert('Erro', 
+                                'Não foi possível transmitir alguns produtos. Verifique se estão com o cadastro ativo', 
+                                [{text: 'OK'}])
+                        }*/
+    
+                        if(logBalancoItemTransmitted.length > 0) {
+                            const updateQuery = `UPDATE logbalancoitem SET transmitido = 1 WHERE id IN (${logBalancoItemTransmitted.map((item) => item.id).join(',')});`
+                            await db.execAsync(updateQuery)
+                            getData()
+                        }
+                    } else {
+                        Alert.alert('Erro', "Erro ao transmitir balanco: " + postResponse, [{text: 'OK'}])
+                        break; // Para interromper se ocorrer algum erro
                     }
-
-                    if(logBalancoItemTransmitted.length > 0) {
-                        const updateQuery = `UPDATE logbalancoitem SET transmitido = 1 WHERE id IN (${logBalancoItemTransmitted.map((item) => item.id).join(',')});`
-                        await db.execAsync(updateQuery)
-                        getData()
-                    }
-                } else {
-                    Alert.alert('Erro', "Erro ao transmitir balanco: " + postResponse, [{text: 'OK'}])
-                } 
+                }
+    
             } catch (err) {
                 Alert.alert("Erro", "Erro ao comunicar com o servidor, verifique a configuração de IP ou conexão com a internet", [{text: 'OK'}])
             } finally {
@@ -145,6 +157,7 @@ export default function balancoItems() {
             }
         }
     }
+    
 
     const onDelete = async (id: number) => {
         const deleteBalancoItemsQuery = `DELETE FROM logbalancoitem WHERE id = ?`;

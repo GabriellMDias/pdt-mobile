@@ -53,5 +53,7 @@ export default class DatabaseInit {
           console.log('Database is up-to-date.');
         }
       }
-
 }
+
+
+

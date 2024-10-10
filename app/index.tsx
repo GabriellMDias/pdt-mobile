@@ -1,5 +1,4 @@
 import DatabaseInit from "@/database/database-init";
-import { db } from "@/database/database-connection"
 import { useState, useEffect } from "react";
 import { router } from 'expo-router';
 import { getConProps } from "@/utils/getConProps";

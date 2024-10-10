@@ -139,41 +139,53 @@ export default function transmissionScreen(){
             
             return acc;
         }, {}));
+
+        const chunkSize = 500; // Data size
+        const chunkedData = [];
+    
+        // Divide data into smaller pieces
+        for (let i = 0; i < bodyDataSummedUp.length; i += chunkSize) {
+            chunkedData.push(bodyDataSummedUp.slice(i, i + chunkSize));
+        }
         
         if(logBalancoItemsNotTransmit.length > 0) {
             try {
                 setTransmitModal(true)
+    
+                // Enviar os "chunks" sequencialmente
+                for (const chunk of chunkedData) {
+                    const postResponse = await axios.post<BalancoBodyData[]>(`http://${conProps?.ipint}:${conProps?.portint}/transmit/lancamentobalanco`, chunk, {timeout: 1800000})
+    
+                    if(postResponse.status === 200) {
+                        const logBalancoItemTransmitted = logBalancoItemsNotTransmit.
+                                                            filter((balancoItemNotTransmit) => 
+                                                                postResponse.data.map((item) => item.idProduto).includes(balancoItemNotTransmit.id_produto) &&
+                                                                postResponse.data.map((item) => item.idBalanco).includes(balancoItemNotTransmit.id_balanco)
+                                                            )
 
-
-                const postResponse = await axios.post<BalancoBodyData[]>(`http://${conProps?.ipint}:${conProps?.portint}/transmit/lancamentobalanco`, bodyDataSummedUp, {timeout: 1800000})
-                
-                
-                if(postResponse.status === 200) {
-                    const logBalancoItemsTransmitted = logBalancoItemsNotTransmit.
-                                                    filter((balancoItemNotTransmit) => 
-                                                        postResponse.data.map((item) => item.idProduto).includes(balancoItemNotTransmit.id_produto) &&
-                                                        postResponse.data.map((item) => item.idBalanco).includes(balancoItemNotTransmit.id_balanco)
-                                                    )
-
-                    const logBalancoItemsNotTransmitted = logBalancoItemsNotTransmit.
+    
+                        // CORRIGIR O CÓDIGO ABAIXO
+                        /*const logBalancoItemsNotTransmitted = logBalancoItemsNotTransmit.
                                                         filter((balancoItemNotTransmit) => (
                                                             !postResponse.data.map((item) => item.idProduto).includes(balancoItemNotTransmit.id_produto) &&
                                                             !postResponse.data.map((item) => item.idBalanco).includes(balancoItemNotTransmit.id_balanco)
                                                         ))
 
-                    if(logBalancoItemsNotTransmitted.length > 0) {
-                        Alert.alert('Erro', 
-                            'Não foi possível transmitir alguns produtos. Verifique se estão com o cadastro ativo', 
-                            [{text: 'OK'}])
+                            if(logBalancoItemsNotTransmitted.length > 0) {
+                                Alert.alert('Erro', 
+                                    'Não foi possível transmitir alguns produtos. Verifique se estão com o cadastro ativo', 
+                                    [{text: 'OK'}])
+                            }*/
+    
+                        if(logBalancoItemTransmitted.length > 0) {
+                            const updateQuery = `UPDATE logbalancoitem SET transmitido = 1 WHERE id IN (${logBalancoItemTransmitted.map((item) => item.id).join(',')});`
+                            await db.execAsync(updateQuery)
+                            getData()
+                        }
+                    } else {
+                        Alert.alert('Erro', "Erro ao transmitir balanco: " + postResponse, [{text: 'OK'}])
+                        break; // Para interromper se ocorrer algum erro
                     }
-
-                    if(logBalancoItemsTransmitted.length > 0) {
-                        const updateQuery = `UPDATE logbalancoitem SET transmitido = 1 WHERE id IN (${logBalancoItemsTransmitted.map((item) => item.id).join(',')});`
-                        await db.execAsync(updateQuery)
-                        getData()
-                    }
-                } else {
-                    Alert.alert('Erro', "Erro ao transmitir balanco: " + postResponse, [{text: 'OK'}])
                 } 
             } catch (err) {
                 Alert.alert("Erro", "Erro ao comunicar com o servidor, verifique a configuração de IP ou conexão com a internet", [{text: 'OK'}])
